@@ -1,0 +1,8 @@
+# IDE folders
+.idea/
+
+# Database files
+alerts.db
+
+# Environment variables
+.env

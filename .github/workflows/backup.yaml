@@ -1,0 +1,50 @@
+name: Database Backup
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight
+  workflow_dispatch:     # Allow manual trigger
+
+env:
+  WORKING_DIRECTORY: backup
+
+jobs:
+  backup:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: '${{ secrets.SSH_PRIVATE_KEY }}'
+
+      - name: Add SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Download database file
+        run: |
+          # Create directory with timestamp
+          timestamp=$(date +%Y%m%d_%H%M%S)
+          target_directory=$WORKING_DIRECTORY
+          mkdir -p "$target_directory" || {
+              echo "Failed to create directory $target_directory"
+              exit 1
+          }
+          
+          timestamp=$(date +%Y%m%d_%H%M%S)
+          echo "TIMESTAMP=$timestamp" >> $GITHUB_ENV
+          mkdir -p "${{ env.WORKING_DIRECTORY }}" || {
+              echo "Failed to create directory ${{ env.WORKING_DIRECTORY }}"
+              exit 1
+          }
+          
+          # Download db files directly to timestamped directory
+          rsync -avz ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/bot/*.db "${{ env.WORKING_DIRECTORY }}"
+
+      - name: Upload backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-backup-${{ env.TIMESTAMP }}
+          path: ${{ env.WORKING_DIRECTORY }}
