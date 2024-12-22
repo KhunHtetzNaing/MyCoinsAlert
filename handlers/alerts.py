@@ -15,7 +15,7 @@ class AlertHandlers:
         """Handler for /alert command"""
         try:
             # Parse command
-            pattern = r"\/alert\s*([\w\s]+?)\s*([<>])\s*(\d+)"
+            pattern = r"\/alert\s*([\w\s]+?)\s*([<>])\s*(\d*\.?\d+)"
             match = re.match(pattern, message.text)
             if match:
                 coin = match.group(1).strip()
