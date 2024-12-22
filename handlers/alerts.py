@@ -65,6 +65,8 @@ class AlertHandlers:
         """Handler for /remove command"""
         try:
             coin = " ".join(message.text.split()[1:])
+            if not coin:
+                raise ValueError()
             if coin.isdigit():
                 index = int(coin) - 1
                 success, coin_id = self.db.remove_alert_by_index(user_id, index)
